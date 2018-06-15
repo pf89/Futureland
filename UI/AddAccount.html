@@ -1,0 +1,118 @@
+<!doctype>
+<html>
+
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <script type="text/javascript" src="/node_modules/web3/dist/web3.min.js"></script>
+    <script type="text/javascript" src="/node_modules/bignumber.js/bignumber.min.js"></script>
+    <script type="text/javascript" src="../node_modules/truffle-contract/dist/truffle-contract.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <script type="text/javascript">
+
+
+    //The address of the SimpleStorage contract. **Change according to the contract address you deployed**
+    var contractAddress = "0x4AbF55Ad2cdfcd01C22D650B1643B1Fac6f9D4C0";
+
+    //Reads a text file. Used to read the contract specification JSON file
+    function readTextFile(file, callback) {
+        var rawFile = new XMLHttpRequest();
+        rawFile.overrideMimeType("application/json");
+        rawFile.open("GET", file, true);
+        rawFile.onreadystatechange = function() {
+            if (rawFile.readyState === 4 && rawFile.status == "200") {
+                callback(rawFile.responseText);
+            }
+        };
+        rawFile.send(null);
+    }
+
+    //This load the contract specifications (from the Truffle compiled contract in /build/contracts/SimpleStorage.json)
+    readTextFile("/build/contracts/CreateAccounts.json", function(text) {
+        contract_spec = JSON.parse(text);
+        contractobject = TruffleContract(contract_spec);
+        contractobject.setProvider(provider);
+
+        getCurrentBalance(web3);
+        //getBalance('current_status','Current balance is : ');
+    });
+
+    //set Account in contract
+    function addAccount() {
+        // Get current status from contract, and set it as old status in the Web page
+        //getStatus('old_status','Old status was: ');
+
+        // Get new status from Web page, and set it in the contract
+        var address = document.getElementById('address').value;
+        var name = document.getElementById('name').value;
+
+        contractobject.at(contractAddress).then(function(instance) {
+            instance.addAccount(address, name, { from: web3.eth.coinbase }).
+            then(function(result) {
+                console.log(result);
+                //getStatus('current_status','Current status now is: ');
+                //getCurrentCredit(web3)
+             }).catch(function(e) {
+                alert(e);
+            })
+        })
+    }
+
+    //Get status in contract
+    function getBalance() {
+        var address = document.getElementById('address').value;
+        contractobject.at(contractAddress).then(function(instance) {
+            instance.getBalance(address).then(function(result) {
+                console.log(result);
+                document.getElementById('current_status').innerText = result;
+            }).catch(function (reason) { alert(reason); })
+        });
+    }
+
+    //Get current credit on default account
+    function getCurrentBalance(web3) {
+        account0=web3.eth.accounts[0];
+        currentCredit=web3.eth.getBalance(account0);
+        //var y = document.getElementById('current_credit');
+        //y.innerText = 'Current credit on ' +account0 + ' is ' +currentCredit+ " wei.";
+    }
+
+
+    //Create a new Web3 object to interact with the blockchain
+    var web3 = new Web3();
+    //Set endpoint at localhost:7545 (Ganache)
+    var provider = new Web3.providers.HttpProvider("http://localhost:7545");
+    web3.setProvider(provider);
+
+    var contract_spec;
+    var contractobject;
+
+
+
+    </script>
+</head>
+
+    <body>
+    <h1>Add Accounts:</h1>
+        <form class="col-xs-6">
+            <div class="form-group">
+                <label for="address">Address:</label>
+                <input type="text" class="form-control" id="address" placeholder="Enter new address">
+            </div>
+            <div class="form-group">
+                <label for="name">Name:</label>
+                <input type="text" class="form-control" id="name" placeholder="Name">
+            </div>
+
+            <button type="submit" class="btn btn-primary" onclick="addAccount();">Submit</button>
+            <button type="submit" class="btn btn-primary" onclick="getBalance();">Submit</button>
+            <br><br>
+            <div class="form-group" id="current_credit"></div>
+            <div class="form-group" id="current_status"></div>
+        </form>
+
+
+    </body>
+
+
+</html>
