@@ -1,6 +1,6 @@
-var SimpleStorage = artifacts.require("./SimpleStorage.sol");
+var CreateAccounts = artifacts.require("./CreateAccounts.sol");
 
 module.exports = function(deployer) {
 	// Arguments after contract name are passed to the constructor
-  deployer.deploy(SimpleStorage,"Patrick:)");
+  deployer.deploy(CreateAccounts);
 };
